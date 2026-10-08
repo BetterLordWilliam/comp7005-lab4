@@ -44,10 +44,13 @@ void* tp_dowork(void* arg)
                 break; // this is a legitimate error case w/ `nanosleep`
             strack_c++;
         } while (strack != 0);
-
+    
         // after work is done log that job is processed
+        j->done = true;
         fprintf(stdout, "worker=%d JOB_DONE job=%d\n",
             worker->id, j->id);
+
+        // tp_printjob(j);
     }
 
     pthread_exit(NULL);
@@ -57,6 +60,9 @@ void* tp_dowork(void* arg)
 
 int main(int argc, char** argv)
 {
+    int pcR, pjR;
+    pcR = pjR = 0;
+
     if (argc != 3) {
         TP_ERR_L("unexpected number of arguments.");
         fprintf(stdout, TP_USAGE_STR);
@@ -94,14 +100,32 @@ int main(int argc, char** argv)
     }
     for (int i = 0; i < app.worker_c; i++) {
         tp_initworker((app.workers + i), i);
-        pthread_create(&(app.workers + i)->pid, NULL, tp_dowork,
+        pcR = pthread_create(&(app.workers + i)->pid, NULL, tp_dowork,
             (void*) (app.workers + i));
+        if (pcR != 0) {
+            fprintf(stderr, "failed to created thread for worker w/ id %d\n", i);
+            continue;
+        }
+        (app.workers + i)->created = true;
     }
 
     // join worker threads
     for (int i = 0; i < app.worker_c; i++) {
-        pthread_join((app.workers + i)->pid, NULL);
+        if ((app.workers + i)->created != true)
+            continue;
+        pjR = pthread_join((app.workers + i)->pid, NULL);
+        if (pjR != 0) {
+            fprintf(stderr, "failed to join thread for worker w/ id %d\n", i);
+        }
     }
+
+
+    // check that all jobs are done
+    fprintf(stderr, "\nin main thread before exiting check that all jobs are done:\n");
+    for (int i = 0; i < app.job_c; i++) {
+        tp_printjob((app.jobs + i));
+    }
+
 
     free(app.jobs);
     free(app.workers);

@@ -22,6 +22,7 @@
 
 typedef struct TP_WORKER {
     int id;
+    int created;
     pthread_t pid;
 } tp_worker_t;
 
