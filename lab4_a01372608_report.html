@@ -1,0 +1,57 @@
+<h1 id="comp7005-lab4-report">COMP7005 Lab4 Report</h1>
+<p>Will Otterbein, A01372608</p>
+<h2 id="main"><code>main</code></h2>
+<p><img src="./screenshots/main.png" alt="main" /></p>
+<p>The main function first processes the arguments strictly rejecting any invalid
+argument count (n != 3), and parsing the two arguments as integers.</p>
+<p>Then main sets up the application state. To make things easy, jobs &amp; workers
+are assigned types, <code>tp_job_t</code> &amp; <code>tp_worker_t</code> respectively, and the application
+state is grouped under the <code>tp_state_t</code> struct instance <code>app</code>. Heap memory
+is allocated for all the jobs &amp; workers, as per the inputs of the program, &amp;
+written to <code>app.workers</code> &amp; <code>app.jobs</code>. The inital worker &amp; job counts are also
+written to the application state as <code>app.worker_c</code> &amp; <code>app.job_c</code>. The completed
+job counter, <code>app.c_job_c</code> , is set to 0.</p>
+<p>For each job, <code>tp_job_t</code> structs are initialized w/ ascending id
+number &amp; the other fields are zeroed as per <code>tp_initjob</code>, written the the
+corresponding index of <code>app.jobs</code>.</p>
+<p>For each worker, <code>tp_worker_t</code> structs are initialized w/ ascending id numbers
+&amp; the other fields are initialized as per <code>tp_initworker</code>. Additionally,
+<code>pthread_create</code> is invoked for the thread, where the routine is specified as
+<code>tp_dowork</code> &amp; to that routine the current job struct is passed. <code>pthread_create</code>
+writes the pid to the structs <code>pid</code> field. If <code>pthread_create</code> fails, we print this
+&amp; the <code>created</code> field of the <code>tp_worker_t</code> instance remains <code>false</code>, or 0.</p>
+<p>Now that the workers are running, main has to wait for all the workers to finish.
+The <code>app.workers</code> memory is iterated over, &amp; <code>pthread_join</code> is called for each
+worker (unless the worker <code>created</code> field is set to <code>false</code>). If there's an
+error joining the thread, we print this.</p>
+<p>Finally we just have a simple sanity check to log all the jobs &amp; confirm that
+their state is set to done. Also the heap memory allocated for <code>app.workers</code> &amp;
+<code>app.jobs</code> is freed. In the regular case, the exit code is 0.</p>
+<p>Like my other labs, error conditions jump to an <code>error</code> label, which also
+frees the <code>app.workers</code> &amp; <code>app.jobs</code> memory (if the pointer is not the
+default uninitialized value of NULL) and the program returns a non zero
+exit code.</p>
+<h2 id="tp_dowork"><code>tp_dowork</code></h2>
+<p><img src="./screenshots/tp_dowork.png" alt="tp-dowork" /></p>
+<p>This function is the thread routine.</p>
+<p>For its argument it accepts (expects) a pointer to the <code>tp_worker_t</code> type for
+that worker (in a more complicated application this might be more useful, I
+just use it to get that workers ID for the log message).</p>
+<p>The processing logic begins with the <code>while</code> loop. The immediate condition
+check against the job count, <code>app.job_c</code>, &amp; processed job offset, <code>app.c_job_c</code>,
+stops the threads from processing after the entire queue of jobs has been
+processed.</p>
+<p>Regarding the processing, to ensure mutual exclusion while the threads are
+dequeuing jobs, the shared mutex <code>tp_jobqueue_a</code> must be acquired. If this cannot
+be done, <code>pthread_mutex_lock</code> takes care of blocking the calling thread for us.
+Otherwise the lock is acquired, the address of the current job to process is
+saved by the acquiring thread using the processed job offset, who is also responsible to advance the processed
+job offset (which is effectively like dequeuing the job).</p>
+<p>The method initializes a <code>tp_worker_rem</code> timespec struct instance, which
+is used to write <code>nanosleep</code> remainder time in order that sleep be reattempted
+until the entire duration of 2 seconds has elapsed.</p>
+<p>Once the fake work (<code>nanosleep</code>) is complete, the thread exits.</p>
+<blockquote>
+<p>Sleep retries a maximum of 10 times before the retry loop is broken out of (defined by <code>TP_MAX_NSLEEP_RETRY</code>).</p>
+</blockquote>
+
