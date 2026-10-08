@@ -30,6 +30,7 @@ int tp_initworker(tp_worker_t* worker, int id)
         return -1;
     }
     worker->id = id;
+    worker->pid = -1;
     return 0;
 }
 

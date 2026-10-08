@@ -1,8 +1,8 @@
 #ifndef TP_COMMON_H
 #define TP_COMMON_H
 
-
 #include <stdio.h>
+#include <pthread.h>
 
 
 #define TP_USAGE_STR \
@@ -18,6 +18,7 @@
 
 typedef struct TP_WORKER {
     int id;
+    pthread_t pid;
 } tp_worker_t;
 
 
@@ -32,6 +33,7 @@ typedef struct TP_STATE {
     int job_c;
     tp_worker_t* workers;    
     tp_job_t* jobs;
+    int c_job_c;
 } tp_state_t;
 
 
