@@ -119,7 +119,6 @@ int main(int argc, char** argv)
         }
     }
 
-
     // check that all jobs are done
     fprintf(stderr, "\nin main thread before exiting check that all jobs are done:\n");
     for (int i = 0; i < app.job_c; i++) {
