@@ -6,10 +6,10 @@ Will Otterbein, A01372608
 
 ![main](./screenshots/main.png)
 
-The main function first processes the arguments stictly rejecting any invalid
+The main function first processes the arguments strictly rejecting any invalid
 argument count (n != 3), and parsing the two arguments as integers.
 
-Then main sets up the applications state. To make things easy, jobs & workers
+Then main sets up the application state. To make things easy, jobs & workers
 are assigned types, `tp_job_t` & `tp_worker_t` respectively, and the application
 state is grouped under the `tp_state_t` struct instance `app`. Heap memory
 is allocated for all the jobs & workers, as per the inputs of the program, &
@@ -61,8 +61,8 @@ Regarding the processing, to ensure mutual exclusion while the threads are
 dequeuing jobs, the shared mutex `tp_jobqueue_a` must be acquired. If this cannot
 be done, `pthread_mutex_lock` takes care of blocking the calling thread for us.
 Otherwise the lock is acquired, the address of the current job to process is
-saved by the acquiring thread, who is also responsible to advance the processed
-job counter (which is effectively like dequeuing the job).
+saved by the acquiring thread using the processed job offset, who is also responsible to advance the processed
+job offset (which is effectively like dequeuing the job).
 
 The method initializes a `tp_worker_rem` timespec struct instance, which
 is used to write `nanosleep` remainder time in order that sleep be reattempted
@@ -70,3 +70,4 @@ until the entire duration of 2 seconds has elapsed.
 
 Once the fake work (`nanosleep`) is complete, the thread exits.
 
+> Sleep retries a maximum of 10 times before the retry loop is broken out of (defined by `TP_MAX_NSLEEP_RETRY`).
