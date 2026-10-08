@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-// #include <unistd.h>
 #include <time.h>
 
 #include "tp_common.h"
@@ -17,32 +16,38 @@ pthread_mutex_t tp_jobqueue_a = PTHREAD_MUTEX_INITIALIZER;
 
 void* tp_dowork(void* arg)
 {
+    int strack = 0;
+    int strack_c = 0;
+
+    struct timespec tp_worker_rem = { 0 };
+
     tp_worker_t* worker = (tp_worker_t*) arg;
 
-    // so I need to acquire the lock
-    // if I acquire the lock, advance the pointer (so that the boys
-    // can also get work done, release the lock cause I don't need it
-    // anymore this job is mine) -- I think...
-    // fprintf(stdout, "I am: %d\n", worker->id);
-    // fprintf(stdout, "I am unsafely reading job 0 state: %d\n",
-    //    (app.jobs + 0)->done);
-
-    while (app.c_job_c < app.job_c) { // oo busy wait. but it should be fine
-        pthread_mutex_lock(&tp_jobqueue_a); // so this blocks until the mutex is locked
+    while (app.c_job_c < app.job_c) {
+        pthread_mutex_lock(&tp_jobqueue_a); // so this blocks until the mutex is lockable
         // save the job address
         tp_job_t* j = ( app.jobs + app.c_job_c );
-        // ~~advance the pointer~~ no that messes w/ free later, advance a processed counter
+        // advance a processed counter, which is like advancing through
+        // a queue
         // threads use this to get the currently unprocessed thing
         app.c_job_c += 1;
         pthread_mutex_unlock(&tp_jobqueue_a);   // release so other threads can do stuff
-        
-        fprintf(stdout, "I am %d, I have got job %d\n",
+       
+        // the simulated work
+        // continues invoking until nansleep returns 0
+        // other nanosleep returns write to `tp_worker_rem` 
+        strack = nanosleep(&tp_worker_delay, &tp_worker_rem);
+        do {
+            if (strack_c == TP_MAX_NSLEEP_RETRY) break; // just in case
+            strack = nanosleep(&tp_worker_rem, &tp_worker_rem); // keep sleeping until the entire thing is done
+            if (strack != 0 && errno != EINTR)
+                break; // this is a legitimate error case w/ `nanosleep`
+            strack_c++;
+        } while (strack != 0);
+
+        // after work is done log that job is processed
+        fprintf(stdout, "worker=%d JOB_DONE job=%d\n",
             worker->id, j->id);
-        
-        // simulate some work being done w/ that stuff
-        // why is this not defined?
-        // sleep(2);
-        nanosleep(&tp_worker_delay, NULL);
     }
 
     pthread_exit(NULL);
@@ -73,25 +78,22 @@ int main(int argc, char** argv)
 
     // initialize job structs
     app.jobs = NULL;
-    app.jobs = (tp_job_t*)calloc(app.job_c, sizeof(tp_job_t));
+    app.jobs = (tp_job_t*)calloc_s(app.job_c, sizeof(tp_job_t));
     if (app.jobs == NULL) {
         goto error;
-    } // [WO] retry on `errno`
+    }
     for (int i = 0; i < app.job_c; i++) {
         tp_initjob((app.jobs + i), i);
-        // tp_printjob((app.jobs + i));
     }
 
     // initialzie worker structs
     app.workers = NULL;
-    app.workers = (tp_worker_t*)calloc(app.worker_c, sizeof(tp_worker_t));
+    app.workers = (tp_worker_t*)calloc_s(app.worker_c, sizeof(tp_worker_t));
     if (app.workers == NULL) {
         goto error;
-    } // [WO] retry on `errno` EINTR
+    }
     for (int i = 0; i < app.worker_c; i++) {
         tp_initworker((app.workers + i), i);
-        // tp_printworker((app.workers + i));
-
         pthread_create(&(app.workers + i)->pid, NULL, tp_dowork,
             (void*) (app.workers + i));
     }
@@ -100,7 +102,6 @@ int main(int argc, char** argv)
     for (int i = 0; i < app.worker_c; i++) {
         pthread_join((app.workers + i)->pid, NULL);
     }
-
 
     free(app.jobs);
     free(app.workers);

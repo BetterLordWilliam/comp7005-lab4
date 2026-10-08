@@ -1,7 +1,9 @@
 #ifndef TP_COMMON_H
 #define TP_COMMON_H
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <pthread.h>
 
 
@@ -14,6 +16,8 @@
 
 #define true (1)
 #define false (0)
+
+#define TP_MAX_NSLEEP_RETRY (10)
 
 
 typedef struct TP_WORKER {
@@ -37,17 +41,26 @@ typedef struct TP_STATE {
 } tp_state_t;
 
 
-// void tp_init_worker(tp_job_t* tp_worker_t);
-
-// void tp_init_job(tp_job_t* tp_job);
-
-// int tp_dowork();
-
 void tp_printjob(tp_job_t* job);
 void tp_printworker(tp_worker_t* worker);
 
+/**
+initializes a `tp_job_t` struct w/ specified id.
+    this function should set the `done` field to `false` or 0
+*/
 int tp_initjob(tp_job_t* job, int id);
+
+/**
+initializes a `tp_worker_t` struct w/ specified id.
+    this function should set the `pid` field to the sentinel value -1
+*/
 int tp_initworker(tp_worker_t* worker, int id);
+
+
+/**
+`calloc` wrapper safely retry when NULL is returned & errno == EINTR.
+*/
+void* calloc_s(size_t n, size_t size);
 
 
 #endif

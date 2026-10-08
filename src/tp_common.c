@@ -34,3 +34,19 @@ int tp_initworker(tp_worker_t* worker, int id)
     return 0;
 }
 
+
+void* calloc_s(size_t n, size_t size)
+{
+    void* mptr;
+    do {
+        mptr = calloc(n, size);
+        if (mptr == NULL && errno == EINTR)
+            continue; // [WO] retry the allocation on NULL w/ EINTR
+        else if (mptr == NULL)
+            return NULL;
+        else
+            return mptr;
+    } while (true);
+}
+
+
