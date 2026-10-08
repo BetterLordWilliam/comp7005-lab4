@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <unistd.h>
+// #include <unistd.h>
+#include <time.h>
 
 #include "tp_common.h"
 
-/*
 struct timespec tp_worker_delay = {
     .tv_sec     = 2,
     .tv_nsec    = 0
 };
-*/
 
 tp_state_t app = { 0 };
 pthread_mutex_t tp_jobqueue_a = PTHREAD_MUTEX_INITIALIZER;
@@ -42,7 +41,8 @@ void* tp_dowork(void* arg)
         
         // simulate some work being done w/ that stuff
         // why is this not defined?
-        sleep(2);
+        // sleep(2);
+        nanosleep(&tp_worker_delay, NULL);
     }
 
     pthread_exit(NULL);
