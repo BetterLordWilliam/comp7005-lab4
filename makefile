@@ -1,6 +1,6 @@
 .RECIPEPREFIX = >
 
-CFLAGS = -Iinclude
+CFLAGS = -std=c11 -Wall -Wextra -Iinclude
 CC = gcc
 
 SRC = src
@@ -9,8 +9,8 @@ BUILD = build
 THREADPOOL = $(BUILD)/thread-pool
 THREADPOOL_SRC = $(SRC)/thread_pool.c
 
-COMMON_OBJ = $(BUILD)/common.o
-COMMON_SRC = $(SRC)/common.c
+COMMON_OBJ = $(BUILD)/tp_common.o
+COMMON_SRC = $(SRC)/tp_common.c
 
 
 all: $(THREADPOOL)
