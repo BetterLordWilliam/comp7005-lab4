@@ -1,5 +1,15 @@
 <h1 id="comp7005-lab4-report">COMP7005 Lab4 Report</h1>
 <p>Will Otterbein, A01372608</p>
+<h2 id="building-the-lab-and-source">Building the Lab and Source</h2>
+<p>I have included a makefile for this lab, with an override for the default <code>all</code>
+target, so you should only have to run the make command.</p>
+<pre><code class="language-bash">make
+</code></pre>
+<p>The built binary will appear under a directory called <code>build</code>.</p>
+<p>The source code for this lab is located underneath the <code>src</code> directory,
+<a href="./src/thread_pool.c"><code>thread_pool.c</code></a> has the main source code &amp; there is also
+the <a href="./src/tp_common.c"><code>tp_common.c</code></a> which has some helper functions (
+chiefly this contains initializers for my program state structures).</p>
 <h2 id="main"><code>main</code></h2>
 <p><img src="./screenshots/main.png" alt="main" /></p>
 <p>The main function first processes the arguments strictly rejecting any invalid
