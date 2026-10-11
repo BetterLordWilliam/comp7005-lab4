@@ -2,6 +2,22 @@
 
 Will Otterbein, A01372608
 
+## Building the Lab and Source
+
+I have included a makefile for this lab, with an override for the default `all`
+target, so you should only have to run the make command.
+
+```bash
+make
+```
+
+The built binary will appear under a directory called `build`.
+
+The source code for this lab is located underneath the `src` directory,
+[`thread_pool.c`](./src/thread_pool.c) has the main source code & there is also
+the [`tp_common.c`](./src/tp_common.c) which has some helper functions (
+chiefly this contains initializers for my program state structures).
+
 ## `main`
 
 ![main](./screenshots/main.png)
@@ -71,3 +87,4 @@ until the entire duration of 2 seconds has elapsed.
 Once the fake work (`nanosleep`) is complete, the thread exits.
 
 > Sleep retries a maximum of 10 times before the retry loop is broken out of (defined by `TP_MAX_NSLEEP_RETRY`).
+
