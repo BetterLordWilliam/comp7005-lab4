@@ -11,7 +11,8 @@ target, so you should only have to run the make command.
 make
 ```
 
-The built binary will appear under a directory called `build`.
+The built binary will appear under a directory called `build`, it should be
+named `thread-pool`.
 
 The source code for this lab is located underneath the `src` directory,
 [`thread_pool.c`](./src/thread_pool.c) has the main source code & there is also
