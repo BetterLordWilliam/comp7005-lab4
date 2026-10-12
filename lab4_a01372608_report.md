@@ -90,4 +90,3 @@ until the entire duration of 2 seconds has elapsed.
 Once the fake work (`nanosleep`) is complete, the thread exits.
 
 > Sleep retries a maximum of 10 times before the retry loop is broken out of (defined by `TP_MAX_NSLEEP_RETRY`).
-
