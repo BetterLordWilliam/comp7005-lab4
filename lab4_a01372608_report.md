@@ -74,6 +74,8 @@ check against the job count, `app.job_c`, & processed job offset, `app.c_job_c`,
 stops the threads from processing after the entire queue of jobs has been
 processed.
 
+> The while loop ensures that a thread will keep accepting jobs as long as there are jobs to accept, meaning that the same thread will be used to process multiple jobs.
+
 Regarding the processing, to ensure mutual exclusion while the threads are
 dequeuing jobs, the shared mutex `tp_jobqueue_a` must be acquired. If this cannot
 be done, `pthread_mutex_lock` takes care of blocking the calling thread for us.

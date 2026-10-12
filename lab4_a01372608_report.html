@@ -52,6 +52,9 @@ just use it to get that workers ID for the log message).</p>
 check against the job count, <code>app.job_c</code>, &amp; processed job offset, <code>app.c_job_c</code>,
 stops the threads from processing after the entire queue of jobs has been
 processed.</p>
+<blockquote>
+<p>The while loop ensures that a thread will keep accepting jobs as long as there are jobs to accept, meaning that the same thread will be used to process multiple jobs.</p>
+</blockquote>
 <p>Regarding the processing, to ensure mutual exclusion while the threads are
 dequeuing jobs, the shared mutex <code>tp_jobqueue_a</code> must be acquired. If this cannot
 be done, <code>pthread_mutex_lock</code> takes care of blocking the calling thread for us.

@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         goto error;
     }
     fprintf(stdout, "starting tp w/ %d workers & %d items\n",
-        app.job_c, app.worker_c);
+        app.worker_c, app.job_c);
 
 
     // initialize job structs
