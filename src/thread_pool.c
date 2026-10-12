@@ -16,15 +16,16 @@ pthread_mutex_t tp_jobqueue_a = PTHREAD_MUTEX_INITIALIZER;
 
 void* tp_dowork(void* arg)
 {
-    int strack = 0;
-    int strack_c = 0;
-
-    struct timespec tp_worker_rem = { 0 };
-
     tp_worker_t* worker = (tp_worker_t*) arg;
 
-    while (app.c_job_c < app.job_c) {
+    while (1) {
         pthread_mutex_lock(&tp_jobqueue_a); // so this blocks until the mutex is lockable
+
+        if (app.c_job_c >= app.job_c) {
+            pthread_mutex_unlock(&tp_jobqueue_a);
+            break;
+        }
+
         // save the job address
         tp_job_t* j = ( app.jobs + app.c_job_c );
         // advance a processed counter, which is like advancing through
@@ -36,6 +37,11 @@ void* tp_dowork(void* arg)
         // the simulated work
         // continues invoking until nansleep returns 0
         // other nanosleep returns write to `tp_worker_rem` 
+        int strack = 0;
+        int strack_c = 0;
+
+        struct timespec tp_worker_rem = { 0 };
+
         strack = nanosleep(&tp_worker_delay, &tp_worker_rem);
         do {
             if (strack_c == TP_MAX_NSLEEP_RETRY) break; // just in case
